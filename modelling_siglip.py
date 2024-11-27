@@ -95,6 +95,9 @@ class SiglipAttention(nn.Module):
         self.scale = self.head_dim**-0.5 # Equivalent to 1 / sqrt(self.head_dim)
         self.dropout = config.attention_dropout
 
+        # Linear transformation for the query, key, and value vectors
+        # IMPORTANT!!!!!!!!!!
+        # The input and output dimensions of the linear layers are the same, which is equal to the embedding dimension
         self.k_proj = nn.Linear(self.embed_dim, self.embed_dim)
         self.v_proj = nn.Linear(self.embed_dim, self.embed_dim)
         self.q_proj = nn.Linear(self.embed_dim, self.embed_dim)
@@ -120,6 +123,8 @@ class SiglipAttention(nn.Module):
         key_states = key_states.view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
 
         value_states = value_states.view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
+
+
         # Calculate the attention using the formula Q * K^T / sqrt(d_k). attn_weights: [Batch_Size, Num_Heads, Num_Patches, Num_Patches]
         attn_weights = (torch.matmul(query_states, key_states.transpose(2, 3)) * self.scale)
 
