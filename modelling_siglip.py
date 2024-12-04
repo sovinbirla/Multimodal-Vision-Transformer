@@ -155,6 +155,7 @@ class SiglipAttention(nn.Module):
         # [Batch_Size, Num_Patches, Embed_Dim]
         attn_output = self.out_proj(attn_output)
 
+        # [Batch_Size, Num_Patches, Embed_Dim], [Batch_Size, Num_Heads, Num_Patches, Num_Patches]
         return attn_output, attn_weights
 
 class SiglipMLP(nn.Module):
