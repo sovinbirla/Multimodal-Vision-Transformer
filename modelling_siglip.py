@@ -148,6 +148,7 @@ class SiglipAttention(nn.Module):
                 f" {attn_output.size()}"
             )
         
+        
         # [Batch_Size, Num_Heads, Num_Patches, Head_Dim] -> [Batch_Size, Num_Patches, Num_Heads, Head_Dim]
         attn_output = attn_output.transpose(1, 2).contiguous()
         # [Batch_Size, Num_Patches, Num_Heads, Head_Dim] -> [Batch_Size, Num_Patches, Embed_Dim]
