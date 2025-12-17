@@ -7,15 +7,18 @@ IMAGENET_STANDARD_MEAN = [0.5, 0.5, 0.5]
 IMAGENET_STANDARD_STD = [0.5, 0.5, 0.5]
 
 
-def add_image_tokens_to_prompt(prefix_prompt, bos_token, image_seq_len, image_token):
+def add_image_tokens_to_prompt(prefix_prompt, beginning_of_sentence_token, image_seq_len, image_token):
     # Quoting from the blog (https://huggingface.co/blog/paligemma#detailed-inference-process):
     #   The input text is tokenized normally.
+
+    ## can be similar to tasks
+
     #   A <bos> token is added at the beginning, and an additional newline token (\n) is appended.
     #   This newline token is an essential part of the input prompt the model was trained with, so adding it explicitly ensures it's always there.
     #   The tokenized text is also prefixed with a fixed number of <image> tokens.
     # NOTE: from the paper it looks like the `\n` should be tokenized separately, but in the HF implementation this is not done.
     #       ref to HF implementation: https://github.com/huggingface/transformers/blob/7f79a97399bb52aad8460e1da2f36577d5dccfed/src/transformers/models/paligemma/processing_paligemma.py#L55-L73
-    return f"{image_token * image_seq_len}{bos_token}{prefix_prompt}\n"
+    return f"{image_token * image_seq_len}{beginning_of_sentence_token}{prefix_prompt}\n"
 
 
 def rescale(
@@ -96,7 +99,7 @@ class PaliGemmaProcessor:
         tokenizer.add_tokens(EXTRA_TOKENS)
         self.image_token_id = tokenizer.convert_tokens_to_ids(self.IMAGE_TOKEN)
         # We will add the BOS and EOS tokens ourselves
-        tokenizer.add_bos_token = False
+        tokenizer.add_beginning_of_sentence_token = False
         tokenizer.add_eos_token = False
 
         self.tokenizer = tokenizer
@@ -129,7 +132,7 @@ class PaliGemmaProcessor:
         input_strings = [
             add_image_tokens_to_prompt(
                 prefix_prompt=prompt,
-                bos_token=self.tokenizer.bos_token,
+                beginning_of_sentence_token=self.tokenizer.beginning_of_sentence_token,
                 image_seq_len=self.image_seq_length,
                 image_token=self.IMAGE_TOKEN,
             )

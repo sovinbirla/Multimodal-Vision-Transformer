@@ -52,9 +52,9 @@ class GemmaConfig:
         intermediate_size,
         num_hidden_layers,
         num_attention_heads,
-        num_key_value_heads,
+        num_key_value_heads,    
         head_dim=256,
-        max_position_embeddings=8192,
+        max_position_embeddings=8192, # used for rotary position encodings
         rms_norm_eps=1e-6,
         rope_theta=10000.0,
         attention_bias=False,
@@ -82,13 +82,13 @@ class PaliGemmaConfig:
 
     def __init__(
         self,
-        vision_config=None,
+        vision_config=None, # figure out where gamma plays a role in parametric ML training
         text_config=None,
         ignore_index=-100,
         image_token_index=256000,
         vocab_size=257152,
         projection_dim=2048,
-        hidden_size=2048,
+        hidden_size=2048, # lm has token = emb size = base size of gemma model
         pad_token_id=None,
         **kwargs,
     ):
@@ -513,6 +513,7 @@ class PaliGemmaMultiModalProjector(nn.Module):
 
 
 class PaliGemmaForConditionalGeneration(nn.Module):
+    # easy
     def __init__(self, config: PaliGemmaConfig):
         super().__init__()
         self.config = config
@@ -553,6 +554,7 @@ class PaliGemmaForConditionalGeneration(nn.Module):
             device=inputs_embeds.device,
         )
         # Shape: [Batch_Size, Seq_Len]. True for text tokens
+        #### THIS IS EQUAL TO CONTEXT LENGTH (I think)
         text_mask = (input_ids != self.config.image_token_index) & (
             input_ids != self.pad_token_id
         )
@@ -649,6 +651,9 @@ class PaliGemmaForConditionalGeneration(nn.Module):
             )
         )
 
+        ## Easy as calling a method
+        ## Extract, first we tokenize the text, text already contains placeholders, we represent these placeholders with the features extracted from the vision encoders, and we feed everything to the vision model
+        ## We take these blocks. 
         outputs = self.language_model(
             attention_mask=attention_mask,
             position_ids=position_ids,

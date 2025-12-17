@@ -50,13 +50,13 @@ class SiglipVisionEmbeddings(nn.Module):
         self.config = config
         self.embed_dim = config.hidden_size
         self.image_size = config.image_size
-        self.patch_size = config.patch_size
+        self.patch_size = config.patch_size # 16 X 16 pixels
 
         self.patch_embedding = nn.Conv2d(
-            in_channels=config.num_channels,  # number of channels in the input image
+            in_channels=config.num_channels,  # number of channels in the input image RBG
             out_channels=self.embed_dim,  # size of the embedding vector
             kernel_size=self.patch_size,  # size of the kernel
-            stride=self.patch_size,  # how much the kernel shifts by
+            stride=self.patch_size,  # how much the kernel shifts/slides by
             padding="valid",  # This indicates no padding is added
         )
 
@@ -70,9 +70,7 @@ class SiglipVisionEmbeddings(nn.Module):
         )
 
     def forward(self, pixel_values: torch.FloatTensor) -> torch.Tensor:
-        _, _, height, width = (
-            pixel_values.shape
-        )  # [Batch_Size, Channels, Height, Width]
+        _, _, height, width = (pixel_values.shape)  # [Batch_Size, Channels, Height, Width]
         # Convolve the `patch_size` kernel over the image, with no overlapping patches since the stride is equal to the kernel size
         # The output of the convolution will have shape [Batch_Size, Embed_Dim, Num_Patches_H, Num_Patches_W]
         # where Num_Patches_H = height // patch_size and Num_Patches_W = width // patch_size
@@ -217,7 +215,7 @@ class SiglipEncoderLayer(nn.Module):
         hidden_states = self.layer_norm2(hidden_states)
         # [Batch_Size, Num_Patches, Embed_Dim] -> [Batch_Size, Num_Patches, Embed_Dim]
         hidden_states = self.mlp(hidden_states)
-        # [Batch_Size, Num_Patches, Embed_Dim]
+        # [Batch_Size, Num_Patches, Embed_Dim] : aka skip connections
         hidden_states = residual + hidden_states
 
         return hidden_states
